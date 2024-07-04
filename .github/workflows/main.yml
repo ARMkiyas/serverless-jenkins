@@ -27,8 +27,8 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           working-directory: ./jenkins_docker
-          context: .
-          file: ./Dockerfile
+          context: ./jenkins_docker
+          file: ./jenkins_docker/Dockerfile
           platforms: linux/amd64
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/jenkins:latest
