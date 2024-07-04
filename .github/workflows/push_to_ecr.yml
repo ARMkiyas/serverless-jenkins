@@ -2,9 +2,9 @@ name: containerize and push to Aws ECR
 
 on:
   workflow_dispatch:
-  push:
-    # branches:
-    #   - main
+#   push:
+# branches:
+#   - main
 jobs:
   containerize-push-to-docker-hub:
     runs-on: ubuntu-latest
