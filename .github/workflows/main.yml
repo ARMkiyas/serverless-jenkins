@@ -28,7 +28,7 @@ jobs:
         with:
           working-directory: ./jenkins_docker
           context: ./jenkins_docker
-          file: ./jenkins_docker/Dockerfile
+          file: ./Dockerfile
           platforms: linux/amd64
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/jenkins:latest
