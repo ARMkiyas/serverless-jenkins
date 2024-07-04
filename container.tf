@@ -16,11 +16,19 @@ resource "azurerm_container_group" "this" {
       port     = 8080
       protocol = "TCP"
     }
+
+    volume {
+      name       = "jenkins_data"
+      mount_path = "/var/jenkins_home"
+    }
+
   }
 
   tags = {
     environment = var.env
   }
+
+
 
 
 }

@@ -58,3 +58,5 @@ operations/variable-scripts/variable.json
 
 # Ignored vscode files
 .vscode/
+
+jenkins_docker/jenkins_data
