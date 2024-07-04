@@ -38,4 +38,4 @@ jobs:
           file: ./jenkins_docker/Dockerfile
           platforms: linux/amd64
           push: true
-          tags: ${{steps.login-ecr-public.outputs.registry}}/jenkins:latest
+          tags: ${{steps.login-ecr-public.outputs.registry}}/${{secrets.REG_ID}}/jenkins-master:latest
