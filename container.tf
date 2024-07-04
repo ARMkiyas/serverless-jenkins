@@ -18,8 +18,9 @@ resource "azurerm_container_group" "this" {
     }
 
     volume {
-      name       = "jenkins_data"
+      name       = "jenkins_logo"
       mount_path = "/var/jenkins_home"
+
     }
 
   }
