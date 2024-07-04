@@ -21,12 +21,14 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name : cd
+        run : cd jenkins_docker
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
-          context: ./jenkins_docker
+          context: .
           file: ./Dockerfile
           platforms: linux/amd64
           push: true
