@@ -5,6 +5,8 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "jenkins_docker/**"
 
 jobs:
   containerize-push-to-docker-hub:

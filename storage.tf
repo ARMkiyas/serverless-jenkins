@@ -24,7 +24,16 @@ resource "azurerm_storage_account" "this" {
 
 
 resource "azurerm_storage_share" "this-share" {
-    name                 = "jenkins-share"
-    storage_account_name = azurerm_storage_account.this.name
-    quota = 50
+  name                 = "jenkins-share"
+  storage_account_name = azurerm_storage_account.this.name
+  quota                = 50
+
 }
+
+resource "azurerm_storage_share" "caddy-share" {
+  name                 = "caddy-share"
+  storage_account_name = azurerm_storage_account.this.name
+  quota                = 1
+
+}
+
