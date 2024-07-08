@@ -72,6 +72,6 @@ try {
 }
 
 println "#########################################################"
-println "--> created local user 'admin' with password: ${password}"
+println "--> Password ${password}"
 println "--> IP address ${jenkinsParameters.url}"
 println "#########################################################"

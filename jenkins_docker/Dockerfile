@@ -35,7 +35,7 @@ RUN apk --no-cache add curl graphviz && \
 # Switch back to Jenkins user
 USER jenkins
 
-# Install plugins
+# # Install plugins
 RUN /bin/jenkins-plugin-cli --plugin-file /var/jenkins_home/plugins.txt
 
 # Log the build ID
@@ -48,7 +48,6 @@ HEALTHCHECK --interval=60s --timeout=10s CMD curl --fail 'http://localhost:${POR
 VOLUME ["/var/jenkins_home/logs", "/var/jenkins_home/cache"]
 VOLUME ["/var/jenkins_home/jobs", "/var/jenkins_home/jenkins-jobs"]
 VOLUME ["/var/jenkins_home/secrets"]
-
 
 # Expose ports for Jenkins and JMX
 EXPOSE ${PORT} 8081
