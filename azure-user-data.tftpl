@@ -1,0 +1,124 @@
+#! /bin/bash
+
+
+
+userfolder="/home/${username}"
+
+
+sudo su ${username}
+
+cd $${userfolder}
+
+
+sudo apt-get update
+sudo apt-get upgrade -y
+
+
+export password=${password}
+
+echo ${password} > hallo.txt
+
+#uninstall all conflicting packages
+for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
+
+
+# Add Docker's official GPG key:
+sudo apt-get update
+sudo apt-get install ca-certificates curl -y
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+# Add the repository to Apt sources:
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+
+
+# Install Docker
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin cifs-utils -y 
+
+
+
+
+
+
+
+sudo mkdir -p  $${userfolder}/jenkins_data/{logs,cache,jobs,jenkins-jobs,secrets,workspace}
+
+
+sudo mkdir -p $${userfolder}/caddy_data
+
+export password=${password}
+
+
+sudo chown -R ${username}:${username} $${userfolder}/jenkins_data
+
+sudo chown -R ${username}:${username} $${userfolder}/caddy_data
+
+
+
+echo "
+version: \"3.8\"
+
+services:
+  jenkins:
+    image: public.ecr.aws/r1c6q1b8/jenkins-master:latest # This should match the tag you used to build your Docker image
+    build:
+      context: .
+      dockerfile: Dockerfile
+   
+    environment:
+      - BUILD_ID=$${BUILD_ID:-\"0.0.0.0-dev\"}
+      - JAVA_OPTS=-Dhudson.footerURL=https://www.kiyas-cloud.live/ -Djenkins.install.runSetupWizard=false -Djenkins.telemetry.enabled=false -Dhudson.remoting.ClassFilter=java.security.KeyPair,sun.security.rsa.RSAPrivateCrtKeyImpl -Dpermissive-script-security.enabled=true -Djdk.tls.client.protocols=TLSv1.2 -javaagent:/usr/share/jenkins/jmx_prometheus_javaagent.jar=8081:/var/jenkins_home/prometheus-jmx-config.yaml -Xms3g -Xmx3g -XX:MetaspaceSize=1024m -XX:MaxMetaspaceExpansion=128m -XX:MaxMetaspaceSize=2048m -Xss2048k -XX:MaxDirectMemorySize=512m
+      - PROMETHEUS_JMX_JAR_VERSION=0.19.0
+      - PORT=8080
+      - JENKINS_HOSTNAME=jenkins.kiyas-cloud.live
+      - JENKINS_ADMIN_PASSWORD=$${password} # Replace with actual password or keep it in a .env file
+    volumes:
+      - ./jenkins_data/logs:/var/jenkins_home/logs
+      - ./jenkins_data/cache:/var/jenkins_home/cache
+      - ./jenkins_data/jobs:/var/jenkins_home/jobs
+      - ./jenkins_data/jenkins-jobs:/var/jenkins_home/jenkins-jobs
+      - ./jenkins_data/secrets:/var/jenkins_home/secrets
+      - ./jenkins_data/workspace:/var/jenkins_home/workspace
+      - /var/run/docker.sock:/var/run/docker.sock # This is required to allow Jenkins to communicate with Docker
+    healthcheck:
+      test:
+        [
+          \"CMD-SHELL\",
+          \"curl --fail http://localhost:8080/login?from=login || exit 1\",
+        ]
+      interval: 1m
+      timeout: 10s
+      retries: 3
+
+  caddy:
+    image: caddy
+    container_name: caddy
+    restart: always
+    ports:
+      - 80:80
+      - 443:443
+    links:
+      - \"jenkins\"
+    volumes:
+      - ./caddy_data:/data
+    command: >
+      sh -c  \"caddy reverse-proxy --from ${domain} --to jenkins:8080\"
+networks:
+  caddy_proxy:
+    external: true
+
+"  >  $${userfolder}/docker-compose.yml
+ 
+
+
+
+
+# Start the Jenkins server adn Caddy reverse proxy
+sudo docker compose up -d
+
+

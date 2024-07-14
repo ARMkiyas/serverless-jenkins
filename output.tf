@@ -1,3 +1,14 @@
-output "container_ip" {
-  value = azurerm_container_group.this.ip_address
+output "ip" {
+
+  value = var.use_vm ? azurerm_linux_virtual_machine.this[0].public_ip_address : azurerm_container_group.this[0].ip_address
+
+
+}
+
+
+
+output "fqdn" {
+
+  value = var.use_vm ? "jenkins.${var.dns-zone}" : azurerm_container_group.this[0].fqdn
+
 }
