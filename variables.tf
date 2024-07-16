@@ -19,7 +19,7 @@ variable "env" {
 
 }
 
-variable "container_group_name" {
+variable "server_name" {
   type        = string
   default     = "jenkins-master"
   description = "jenkins master container name"
@@ -42,7 +42,7 @@ variable "storage_replication_type" {
 
 
 variable "image" {
-  
+
   type        = string
   default     = "armkiyas/jenkins-master:latest"
   description = "container image"
@@ -52,28 +52,86 @@ variable "image" {
 variable "jenkins_admin_password" {
   type        = string
   description = "jenkins admin password"
-  sensitive = true
-  
+  sensitive   = true
+
 }
 
 
-variable "username" {
+variable "docker_username" {
   type        = string
   description = "username"
-  sensitive = true
-  
+  sensitive   = true
+
 }
+
+variable "docker_password" {
+  type        = string
+  description = "username"
+  sensitive   = true
+
+}
+
 
 variable "password" {
   type        = string
   description = "password"
-  sensitive = true
-  
+  sensitive   = true
+
 }
 
 variable "registry_url" {
   type        = string
   default     = "jenkins-master"
   description = "jenkins master container name"
+
+}
+
+variable "use_vm" {
+  type        = bool
+  default     = false
+  description = "use vm instead of container"
+
+}
+
+variable "vm_size" {
+  type        = string
+  default     = "Standard_F2s_v2"
+  description = "vm size"
+}
+
+
+variable "vm-username" {
+  type        = string
+  description = "vm username"
+  default     = "jenkinsuser"
+
+}
+
+
+variable "public_key" {
+  type        = string
+  description = "public key for vm authentication"
+
+}
+
+
+variable "create_dns_zone" {
+  type        = bool
+  default     = false
+  description = "create new dns zone"
+
+}
+
+variable "dns-zone" {
+  type        = string
+  description = "dns zone name"
+  default     = "expample.com"
+}
+
+
+variable "dns_resource_group" {
+  type        = string
+  description = "dns resource group name"
+  default     = "mydnsrg"
 
 }

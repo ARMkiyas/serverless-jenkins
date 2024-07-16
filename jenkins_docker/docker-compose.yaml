@@ -2,14 +2,14 @@ version: "3.8"
 
 services:
   jenkins:
-    image: armkiyas/jenkins:latest # This should match the tag you used to build your Docker image
+    image: armkiyas/jenkins:test # This should match the tag you used to build your Docker image
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
-      - "50000:50000" # This is for Jenkins agent communication
-      - "8081:8081" # This is for the JMX Prometheus Java agent
+    # ports:
+    #   - "8080:8080"
+    #   - "50000:50000" # This is for Jenkins agent communication
+    #   - "8081:8081" # This is for the JMX Prometheus Java agent
     environment:
       - BUILD_ID=${BUILD_ID:-'0.0.0.0-dev'}
       - JAVA_OPTS="-Dhudson.footerURL=https://www.kiyas-cloud.live/ -Djenkins.install.runSetupWizard=false -Djenkins.telemetry.enabled=false -Dhudson.remoting.ClassFilter=java.security.KeyPair,sun.security.rsa.RSAPrivateCrtKeyImpl -Dpermissive-script-security.enabled=true -Djdk.tls.client.protocols=TLSv1.2 -javaagent:/usr/share/jenkins/jmx_prometheus_javaagent.jar=8081:/var/jenkins_home/prometheus-jmx-config.yaml -Xms3g -Xmx3g -XX:MetaspaceSize=1024m -XX:MaxMetaspaceExpansion=128m -XX:MaxMetaspaceSize=2048m -Xss2048k -XX:MaxDirectMemorySize=512m"
@@ -23,6 +23,7 @@ services:
       - ./jenkins_data/jobs:/var/jenkins_home/jobs
       - ./jenkins_data/jenkins-jobs:/var/jenkins_home/jenkins-jobs
       - ./jenkins_data/secrets:/var/jenkins_home/secrets
+      - ./jenkins_data/workspace:/var/jenkins_home/workspace
       - /var/run/docker.sock:/var/run/docker.sock # This is required to allow Jenkins to communicate with Docker
     healthcheck:
       test:
@@ -33,5 +34,22 @@ services:
       interval: 1m
       timeout: 10s
       retries: 3
+
+  caddy:
+    image: caddy
+    container_name: caddy
+    restart: always
+    ports:
+      - 80:80
+      - 443:443
+    links:
+      - "jenkins"
+    volumes:
+      - ./caddy_data:/data
+    command: >
+      sh -c  "caddy reverse-proxy --to jenkins:8080"
 # volumes:
 #   jenkins_data:
+networks:
+  caddy_proxy:
+    external: true

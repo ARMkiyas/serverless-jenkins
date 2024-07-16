@@ -72,6 +72,5 @@ try {
 }
 
 println "#########################################################"
-println "--> Password ${password}"
 println "--> IP address ${jenkinsParameters.url}"
 println "#########################################################"
