@@ -5,7 +5,7 @@ terraform {
   #   organization = "kiyas-cloud"
 
   #   workspaces {
-  #     name = "cloudcare"
+  #     name = "jenkins-master"
   #   }
   # }
   required_providers {
