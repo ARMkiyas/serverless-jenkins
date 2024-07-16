@@ -108,6 +108,10 @@ resource "azurerm_ssh_public_key" "this" {
 
 }
 
+
+
+
+
 resource "azurerm_linux_virtual_machine" "this" {
   count = var.use_vm ? 1 : 0
 
@@ -153,11 +157,21 @@ resource "azurerm_linux_virtual_machine" "this" {
 
 
   custom_data = base64encode(templatefile("azure-user-data.tftpl", {
-    username = var.vm-username,
-    password = var.password,
-    domain   = "jenkins.${var.dns-zone}",
+    username               = var.vm-username,
+    jenkins_admin_password = var.password,
+    account_name           = azurerm_storage_account.this.name,
+    storage_acc_key        = azurerm_storage_account.this.primary_access_key,
+    file_share = {
+      "logs"         = azurerm_storage_share.jenkins-logs-share.name
+      "cache"        = azurerm_storage_share.jenkins-cache-share.name
+      "jobs"         = azurerm_storage_share.jenkins-jobs-share.name
+      "jenkins-jobs" = azurerm_storage_share.jenkins-job-data-share.name
+      "secrets"      = azurerm_storage_share.jenkins-secrets-share.name
+      "workspace"    = azurerm_storage_share.jenkins-workspace-share.name
+      "caddy"        = azurerm_storage_share.caddy-share.name
+    },
+    host_name = "jenkins.${var.dns-zone}",
   }))
-
 
 }
 

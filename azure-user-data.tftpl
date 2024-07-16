@@ -1,29 +1,21 @@
 #! /bin/bash
 
-
-
 userfolder="/home/${username}"
-
+PATH_FILE_SHARE="/mnt/cloudfile"
 
 sudo su ${username}
 
 cd $${userfolder}
 
-
 sudo apt-get update
 sudo apt-get upgrade -y
 
-
-export password=${password}
-
-echo ${password} > hallo.txt
+echo ${jenkins_admin_password} > hallo.txt
 
 #uninstall all conflicting packages
 for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
 
-
 # Add Docker's official GPG key:
-sudo apt-get update
 sudo apt-get install ca-certificates curl -y
 sudo install -m 0755 -d /etc/apt/keyrings
 sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
@@ -41,56 +33,60 @@ sudo apt-get update
 sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin cifs-utils -y 
 
 
+# Create directories for file share and credentials
+sudo mkdir -p $${PATH_FILE_SHARE}
+sudo mkdir -p /etc/.smbcredentials
+if [ ! -f "/etc/.smbcredentials/${account_name}.cred" ]; then
+    sudo bash -c "echo \"username=${account_name}\" >> /etc/.smbcredentials/${account_name}.cred"
+    sudo bash -c "echo \"password=${storage_acc_key}\" >> /etc/.smbcredentials/${account_name}.cred"
+fi
+sudo chmod 600 /etc/.smbcredentials/${account_name}.cred
 
 
+%{ for key, value in file_share }
 
+  SHARE_PATH="$${PATH_FILE_SHARE}/${key}"
+  sudo mkdir -p $${SHARE_PATH}
+  if ! grep -qs "$${SHARE_PATH}" /proc/mounts; then
+      sudo bash -c "echo \"//${account_name}.file.core.windows.net/${value} $${SHARE_PATH} cifs nofail,credentials=/etc/.smbcredentials/${account_name}.cred,dir_mode=0777,file_mode=0777,serverino,nosharesock,actimeo=30\" >> /etc/fstab"
+      sudo mount -t cifs //${account_name}.file.core.windows.net/${value} $${SHARE_PATH} -o credentials=/etc/.smbcredentials/${account_name}.cred,dir_mode=0777,file_mode=0777,serverino,nosharesock,actimeo=30
+  fi
+%{ endfor ~}
 
+# Generate Docker Compose YAML dynamically
+DOCKER_COMPOSE_FILE="$${userfolder}/docker-compose.yml"
 
-sudo mkdir -p  $${userfolder}/jenkins_data/{logs,cache,jobs,jenkins-jobs,secrets,workspace}
-
-
-sudo mkdir -p $${userfolder}/caddy_data
-
-export password=${password}
-
-
-sudo chown -R ${username}:${username} $${userfolder}/jenkins_data
-
-sudo chown -R ${username}:${username} $${userfolder}/caddy_data
-
-
-
-echo "
-version: \"3.8\"
+cat <<EOF > $${DOCKER_COMPOSE_FILE}
+version: "3.8"
 
 services:
   jenkins:
-    image: public.ecr.aws/r1c6q1b8/jenkins-master:latest # This should match the tag you used to build your Docker image
-    build:
-      context: .
-      dockerfile: Dockerfile
-   
+    image: public.ecr.aws/r1c6q1b8/jenkins-master:latest
     environment:
-      - BUILD_ID=$${BUILD_ID:-\"0.0.0.0-dev\"}
+      - BUILD_ID=$${BUILD_ID:-"0.0.0.0-dev"}
       - JAVA_OPTS=-Dhudson.footerURL=https://www.kiyas-cloud.live/ -Djenkins.install.runSetupWizard=false -Djenkins.telemetry.enabled=false -Dhudson.remoting.ClassFilter=java.security.KeyPair,sun.security.rsa.RSAPrivateCrtKeyImpl -Dpermissive-script-security.enabled=true -Djdk.tls.client.protocols=TLSv1.2 -javaagent:/usr/share/jenkins/jmx_prometheus_javaagent.jar=8081:/var/jenkins_home/prometheus-jmx-config.yaml -Xms3g -Xmx3g -XX:MetaspaceSize=1024m -XX:MaxMetaspaceExpansion=128m -XX:MaxMetaspaceSize=2048m -Xss2048k -XX:MaxDirectMemorySize=512m
       - PROMETHEUS_JMX_JAR_VERSION=0.19.0
       - PORT=8080
-      - JENKINS_HOSTNAME=jenkins.kiyas-cloud.live
-      - JENKINS_ADMIN_PASSWORD=$${password} # Replace with actual password or keep it in a .env file
+      - JENKINS_HOSTNAME=${host_name}
+      - JENKINS_ADMIN_PASSWORD=\$${JENKINS_ADMIN_PASSWORD}
     volumes:
-      - ./jenkins_data/logs:/var/jenkins_home/logs
-      - ./jenkins_data/cache:/var/jenkins_home/cache
-      - ./jenkins_data/jobs:/var/jenkins_home/jobs
-      - ./jenkins_data/jenkins-jobs:/var/jenkins_home/jenkins-jobs
-      - ./jenkins_data/secrets:/var/jenkins_home/secrets
-      - ./jenkins_data/workspace:/var/jenkins_home/workspace
-      - /var/run/docker.sock:/var/run/docker.sock # This is required to allow Jenkins to communicate with Docker
+EOF
+
+%{ for key, value in file_share }
+
+   if [ "$key" != "caddy" ]; then
+    SHARE_PATH="$${PATH_FILE_SHARE}/${key}"
+    echo "      - $${SHARE_PATH}:/var/jenkins_home/${key}" >> $${DOCKER_COMPOSE_FILE}
+  fi
+    
+%{ endfor ~}
+
+
+# Complete Jenkins service and add Caddy service
+cat <<EOF >> $${DOCKER_COMPOSE_FILE}
+      - /var/run/docker.sock:/var/run/docker.sock
     healthcheck:
-      test:
-        [
-          \"CMD-SHELL\",
-          \"curl --fail http://localhost:8080/login?from=login || exit 1\",
-        ]
+      test: ["CMD-SHELL", "curl --fail ${host_name}/login?from=login || exit 1"]
       interval: 1m
       timeout: 10s
       retries: 3
@@ -103,20 +99,25 @@ services:
       - 80:80
       - 443:443
     links:
-      - \"jenkins\"
+      - "jenkins"
     volumes:
-      - ./caddy_data:/data
+      - $${PATH_FILE_SHARE}/caddy:/data
     command: >
-      sh -c  \"caddy reverse-proxy --from ${domain} --to jenkins:8080\"
+      sh -c "caddy reverse-proxy --from ${host_name} --to jenkins:8080"
+
 networks:
   caddy_proxy:
     external: true
-
-"  >  $${userfolder}/docker-compose.yml
- 
+EOF
 
 
+# add environment variables to .env file
 
+cat <<EOF > $${userfolder}/.env 
+JENKINS_ADMIN_PASSWORD=${jenkins_admin_password}
+EOF
+
+chmod 600 $${userfolder}/.env
 
 # Start the Jenkins server adn Caddy reverse proxy
 sudo docker compose up -d

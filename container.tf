@@ -70,50 +70,55 @@ resource "azurerm_container_group" "this" {
     volume {
       name                 = "jenkins-logs"
       mount_path           = "/var/jenkins_home/logs"
-      storage_account_name = azurerm_storage_account.this[0].name
-      storage_account_key  = azurerm_storage_account.this[0].primary_access_key
-      share_name           = azurerm_storage_share.jenkins-logs-share[0].name
+      storage_account_name = azurerm_storage_account.this.name
+      storage_account_key  = azurerm_storage_account.this.primary_access_key
+      share_name           = azurerm_storage_share.jenkins-logs-share.name
 
     }
     volume {
       name                 = "jenkins-cache"
       mount_path           = "/var/jenkins_home/cache"
-      storage_account_name = azurerm_storage_account.this[0].name
-      storage_account_key  = azurerm_storage_account.this[0].primary_access_key
-      share_name           = azurerm_storage_share.jenkins-cache-share[0].name
+      storage_account_name = azurerm_storage_account.this.name
+      storage_account_key  = azurerm_storage_account.this.primary_access_key
+      share_name           = azurerm_storage_share.jenkins-cache-share.name
 
     }
 
     volume {
       name                 = "jenkins-jobs"
       mount_path           = "/var/jenkins_home/jobs"
-      storage_account_name = azurerm_storage_account.this[0].name
-      storage_account_key  = azurerm_storage_account.this[0].primary_access_key
-      share_name           = azurerm_storage_share.jenkins-jobs-share[0].name
+      storage_account_name = azurerm_storage_account.this.name
+      storage_account_key  = azurerm_storage_account.this.primary_access_key
+      share_name           = azurerm_storage_share.jenkins-jobs-share.name
 
     }
     volume {
       name                 = "jenkins-job-data"
       mount_path           = "/var/jenkins_home/jenkins-jobs"
-      storage_account_name = azurerm_storage_account.this[0].name
-      storage_account_key  = azurerm_storage_account.this[0].primary_access_key
-      share_name           = azurerm_storage_share.jenkins-job-data-share[0].name
+      storage_account_name = azurerm_storage_account.this.name
+      storage_account_key  = azurerm_storage_account.this.primary_access_key
+      share_name           = azurerm_storage_share.jenkins-job-data-share.name
     }
     volume {
-      name                 = "jenkins-secrets"
-      mount_path           = "/var/jenkins_home/secrets"
-      storage_account_name = azurerm_storage_account.this[0].name
-      storage_account_key  = azurerm_storage_account.this[0].primary_access_key
-      share_name           = azurerm_storage_share.jenkins-secrets-share[0].name
+      name       = "jenkins-secrets"
+      mount_path = "/var/jenkins_home/secrets"
+
+
+      storage_account_name = azurerm_storage_account.this.name
+      storage_account_key  = azurerm_storage_account.this.primary_access_key
+      share_name           = azurerm_storage_share.jenkins-secrets-share.name
+
+
+
 
     }
 
     volume {
       name                 = "jenkins-workspace"
       mount_path           = "/var/jenkins_home/workspace"
-      storage_account_name = azurerm_storage_account.this[0].name
-      storage_account_key  = azurerm_storage_account.this[0].primary_access_key
-      share_name           = azurerm_storage_share.jenkins-workspace-share[0].name
+      storage_account_name = azurerm_storage_account.this.name
+      storage_account_key  = azurerm_storage_account.this.primary_access_key
+      share_name           = azurerm_storage_share.jenkins-workspace-share.name
     }
 
 
@@ -138,18 +143,14 @@ resource "azurerm_container_group" "this" {
     volume {
       name                 = "aci-caddy-data"
       mount_path           = "/data"
-      storage_account_key  = azurerm_storage_account.this[0].primary_access_key
-      storage_account_name = azurerm_storage_account.this[0].name
-      share_name           = azurerm_storage_share.caddy-share[0].name
+      storage_account_key  = azurerm_storage_account.this.primary_access_key
+      storage_account_name = azurerm_storage_account.this.name
+      share_name           = azurerm_storage_share.caddy-share.name
     }
 
     commands = ["caddy", "reverse-proxy", "--from", "jenkins.${var.dns-zone}", "--to", "localhost:8080"]
 
   }
-
-
-
-
 
   tags = {
     environment = var.env
