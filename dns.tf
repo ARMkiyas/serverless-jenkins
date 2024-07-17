@@ -11,7 +11,7 @@ module "dns_record" {
 
   a_records = var.use_vm ? [
     {
-      name    = "jenkins"
+      name    = var.subdomain
       ttl     = 300
       records = [azurerm_linux_virtual_machine.this[0].public_ip_address]
     },
@@ -19,7 +19,7 @@ module "dns_record" {
 
   cname_records = var.use_vm ? [] : [
     {
-      name   = "jenkins"
+      name   = var.subdomain
       ttl    = 300
       record = azurerm_container_group.this[0].fqdn
     },

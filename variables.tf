@@ -136,3 +136,11 @@ variable "dns_resource_group" {
   default     = "mydnsrg"
 
 }
+
+
+variable "subdomain" {
+  type        = string
+  description = "subdomain name"
+  default     = "jenkins"
+
+}

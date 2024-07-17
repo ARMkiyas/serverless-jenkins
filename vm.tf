@@ -170,7 +170,7 @@ resource "azurerm_linux_virtual_machine" "this" {
       "workspace"    = azurerm_storage_share.jenkins-workspace-share.name
       "caddy"        = azurerm_storage_share.caddy-share.name
     },
-    host_name = "jenkins.${var.dns-zone}",
+    host_name = "${var.subdomain}.${var.dns-zone}",
   }))
 
 }

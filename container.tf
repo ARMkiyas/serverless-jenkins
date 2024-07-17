@@ -148,7 +148,7 @@ resource "azurerm_container_group" "this" {
       share_name           = azurerm_storage_share.caddy-share.name
     }
 
-    commands = ["caddy", "reverse-proxy", "--from", "jenkins.${var.dns-zone}", "--to", "localhost:8080"]
+    commands = ["caddy", "reverse-proxy", "--from", "${var.subdomain}.${var.dns-zone}", "--to", "localhost:8080"]
 
   }
 
