@@ -9,6 +9,6 @@ output "ip" {
 
 output "fqdn" {
 
-  value = var.use_vm ? "jenkins.${var.dns-zone}" : azurerm_container_group.this[0].fqdn
+  value = var.use_vm ? "${var.subdomain}.${var.dns-zone}" : azurerm_container_group.this[0].fqdn
 
 }
