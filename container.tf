@@ -21,11 +21,11 @@ resource "azurerm_container_group" "this" {
   os_type             = "Linux"
 
 
-  image_registry_credential {
-    server   = "index.docker.io"
-    username = var.docker_username
-    password = var.docker_password
-  }
+  # image_registry_credential {
+  #   server   = "index.docker.io"
+  #   username = var.docker_username
+  #   password = var.docker_password
+  # }
 
   exposed_port = [
     {
