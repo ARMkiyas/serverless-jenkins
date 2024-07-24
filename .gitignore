@@ -60,3 +60,4 @@ operations/variable-scripts/variable.json
 .vscode/
 
 jenkins_docker/jenkins_data
+jenkins_data/caddy_data

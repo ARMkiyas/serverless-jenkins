@@ -1,11 +1,11 @@
 variable "resGroup" {
   type        = string
-  default     = "cloudcareinfra"
+  default     = "jenkins_infra"
   description = "resource group name"
 
 }
 
-variable "locaion" {
+variable "location" {
   type        = string
   default     = "eastus"
   description = "location of the resource group"
@@ -57,21 +57,6 @@ variable "jenkins_admin_password" {
 }
 
 
-variable "docker_username" {
-  type        = string
-  description = "username"
-  sensitive   = true
-
-}
-
-variable "docker_password" {
-  type        = string
-  description = "username"
-  sensitive   = true
-
-}
-
-
 variable "password" {
   type        = string
   description = "password"
@@ -79,12 +64,6 @@ variable "password" {
 
 }
 
-variable "registry_url" {
-  type        = string
-  default     = "jenkins-master"
-  description = "jenkins master container name"
-
-}
 
 variable "use_vm" {
   type        = bool
