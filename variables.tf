@@ -5,7 +5,7 @@ variable "resGroup" {
 
 }
 
-variable "locaion" {
+variable "location" {
   type        = string
   default     = "eastus"
   description = "location of the resource group"
