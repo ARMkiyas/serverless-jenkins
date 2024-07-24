@@ -1,6 +1,6 @@
 variable "resGroup" {
   type        = string
-  default     = "cloudcareinfra"
+  default     = "jenkins_infra"
   description = "resource group name"
 
 }
