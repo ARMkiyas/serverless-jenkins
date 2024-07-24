@@ -42,13 +42,11 @@ This project provisions and deploys a Jenkins server on Azure using Terraform. I
 ### Clone the repository
 
 ```bash
-git clone https://github.com/yarmkiyas/terraform-jenkins-on-azure.git
+git clone https://github.com/ARMkiyas/terraform-jenkins-on-azure.git
 cd terraform-jenkins-azure
 ```
 
-
 ### Backend Configuration
-
 
 ### Local Backend
 By default, this project is set up to use the local backend for storing Terraform state files. This is suitable for initial development and testing on your local machine.
